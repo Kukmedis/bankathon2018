@@ -7,19 +7,101 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
-import {createStackNavigator} from 'react-navigation';
+import {
+  Image,
+  Text,
+  StyleSheet
+} from 'react-native';
+import {createStackNavigator, createBottomTabNavigator} from 'react-navigation';
+import Login from './Login';
+import AddAccount from './AddAccount';
+import Accounts from './Accounts';
+import Spendings from './Spendings';
+import colors from './colors';
+import Settings from './Settings';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+const styles = StyleSheet.create({
+  bottomBarStyle: {
+    backgroundColor: colors.blue, 
+    height: 56
+  },
+  tabBarActiveLabel: {
+      height: 16,
+      marginBottom: 8,
+      fontFamily: 'sans-serif-condensed',
+      fontSize: 12,
+      color: '#FFFFFFFF',
+      opacity: 1,
+      textAlignVertical: 'center',
+      textAlign: 'center'
+  },
+  tabBarInActiveLabel: {
+      height: 16,
+      marginBottom: 7,
+      marginTop: 1,
+      fontFamily: 'sans-serif-condensed',
+      fontSize: 10,      
+      color: '#FFFFFFFF',
+      opacity: 0.8,
+      textAlignVertical: 'center',
+      textAlign: 'center'
+  },
+  tabBarIcon: {
+      marginTop: 8,
+      height: 24,
+      width: 24
+  }
 });
 
-const StackNavigator = createStackNavigator({
+const BottomNav = createBottomTabNavigator({
+  Accounts: {screen: Accounts},
+  Spendings: {screen: Spendings},
+  Settings: {screen: Settings}
+},
+{
+  tabBarOptions: {
+    style: styles.bottomBarStyle,
+},
+navigationOptions: ({navigation}) => {
+  return ({
+    tabBarIcon: ({ focused, tintColor }) => {
+      const { routeName } = navigation.state;
+      let imageSource;
+    
+      if(routeName === 'Accounts') 
+        imageSource = require('../assets/accounts.png');
+      else if(routeName === 'Spendings')
+        imageSource = require('../assets/spendings.png');
+      else if(routeName === 'Settings')
+        imageSource = require('../assets/settings.png');
+     
+      return <Image style = {[styles.tabBarIcon, {opacity: focused ? 1 : 0.7}]} source = {imageSource} resizeMode = 'contain' />
+    },
+    tabBarLabel: ({ focused, tintColor }) => {
+      const { routeName } = navigation.state;
+      let text;
+      if(routeName === 'Accounts') 
+        text = 'Accounts';
+      else if(routeName === 'Spendings')
+        text = 'Spendings';
+      else if(routeName === 'Settings')
+        text = 'Settings';
+      else
+        text = I18n.translate('homeScreen').tabBarLabels.settings;
+      return <Text style = {focused ? styles.tabBarActiveLabel : styles.tabBarInActiveLabel}>{text}</Text>
+    },
+    
+  })
+}});
 
-})
+const StackNavigator = createStackNavigator({
+  Login: {screen: Login},
+  AddAccount: {screen: AddAccount},
+  MainScreen: {screen: BottomNav}
+},{
+  headerMode: 'none'
+});
+
 export default class App extends Component {
   render() {
     return (
@@ -27,22 +109,3 @@ export default class App extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
