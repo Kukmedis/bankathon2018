@@ -1,0 +1,3 @@
+rootProject.name = 'AAZZUR_CONNECT'
+
+include ':app'
