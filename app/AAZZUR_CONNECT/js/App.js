@@ -19,37 +19,38 @@ import Accounts from './Accounts';
 import Spendings from './Spendings';
 import colors from './colors';
 import Settings from './Settings';
+import { scaleHeight, scaleFont, scaleWidth } from './scale';
 
 const styles = StyleSheet.create({
   bottomBarStyle: {
     backgroundColor: colors.blue, 
-    height: 56
+    height: scaleHeight(56)
   },
   tabBarActiveLabel: {
-      height: 16,
-      marginBottom: 8,
+      height: scaleHeight(16),
+      marginBottom: scaleHeight(8),
       fontFamily: 'sans-serif-condensed',
-      fontSize: 12,
+      fontSize: scaleFont(12),
       color: '#FFFFFFFF',
       opacity: 1,
       textAlignVertical: 'center',
       textAlign: 'center'
   },
   tabBarInActiveLabel: {
-      height: 16,
-      marginBottom: 7,
-      marginTop: 1,
+      height: scaleHeight(16),
+      marginBottom: scaleHeight(7),
+      marginTop: scaleHeight(1),
       fontFamily: 'sans-serif-condensed',
-      fontSize: 10,      
+      fontSize: scaleFont(10),      
       color: '#FFFFFFFF',
       opacity: 0.8,
       textAlignVertical: 'center',
       textAlign: 'center'
   },
   tabBarIcon: {
-      marginTop: 8,
-      height: 24,
-      width: 24
+      marginTop: scaleHeight(8),
+      height: scaleHeight(24),
+      width: scaleWidth(24)
   }
 });
 
