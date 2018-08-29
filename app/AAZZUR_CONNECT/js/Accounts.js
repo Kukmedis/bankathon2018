@@ -4,7 +4,8 @@ import {
     FlatList,
     Text,
     Image,
-    TouchableOpacity
+    TouchableOpacity,
+    Platform
 } from 'react-native';
 import AppBar from './AppBar';
 import { scaleHeight, scaleWidth, scaleFont } from './scale';
@@ -34,10 +35,19 @@ export default class Accounts extends Component {
             iban: 'DE76076551236579085665'
         }];
 
+        let iosElevationStyle =  {
+            shadowColor: '#000000',
+            shadowOffset: {
+                width: 0,
+                height: 2
+            },
+            shadowRadius: 1,
+            shadowOpacity: 0.6};
+
         return (
             <View style = {{width: '100%', height: '100%', backgroundColor: 'white', alignItems: 'center'}}>
                 <AppBar text = 'Accounts' />
-                <View style = {{marginTop: 56, flex: 1, width: '100%'}}>
+                <View style = {{marginTop: (Platform.OS === 'ios' ? 22 : 0) + scaleHeight(56), flex: 1, width: '100%'}}>
                     <FlatList style = {{flex: 1, width: '100%'}} 
                     data = {accountData}
                     keyExtractor = {(item, index) => index.toString()}
@@ -45,15 +55,15 @@ export default class Accounts extends Component {
                         return (
                             <View style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(72), borderColor: '#0000000D', borderBottomWidth: 1, elevation: 2}}>
                                 <View style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(48), paddingHorizontal: scaleWidth(16), flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                                    <Text style = {{fontSize: 16, fontFamily: 'sans-serif-condensed', textAlignVertical: 'center', color: 'black', opacity: 0.7}}>{item.accountName}</Text>
+                                    <Text style = {{fontSize: 16, fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', textAlignVertical: 'center', color: 'black', opacity: 0.7}}>{item.accountName}</Text>
                                     <Image style = {{height: 24, width: 24}} source = {item.accountIcon} resizeMode = 'contain' />
                                 </View>
-                                <Text style = {{fontSize: 12, fontFamily: 'sans-serif-condensed', textAlignVertical: 'top', opacity: 0.45, color: 'black', paddingLeft:scaleWidth(16)}}>{'IBAN: ' + item.iban}</Text>
+                                <Text style = {{fontSize: 12, fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', textAlignVertical: 'top', opacity: 0.45, color: 'black', paddingLeft:scaleWidth(16)}}>{'IBAN: ' + item.iban}</Text>
                             </View>
                         )
                     }}/>
                 </View>
-                <TouchableOpacity onPress = {() => this.props.navigation.navigate('AddAccount')} style = {{position: 'absolute', bottom: scaleHeight(16), width: scaleHeight(50), height: scaleHeight(50), borderRadius: scaleHeight(25), marginTop: scaleHeight(10), backgroundColor: colors.blue, elevation: 8, borderWidth: 0.1, justifyContent: 'center', alignItems: 'center'}}>
+                <TouchableOpacity onPress = {() => this.props.navigation.navigate('AddAccount')} style = {[{position: 'absolute', bottom: scaleHeight(16), width: scaleHeight(50), height: scaleHeight(50), borderRadius: scaleHeight(25), marginTop: scaleHeight(10), backgroundColor: colors.blue, elevation: 8, borderWidth: 0.1, justifyContent: 'center', alignItems: 'center'}, Platform.OS === 'ios' ? iosElevationStyle : {}]}>
                     <Image style = {{width: scaleHeight(40), height: scaleHeight(40), }} source = {require('../assets/add_white_24dp.png')} />
                 </TouchableOpacity>
             </View>

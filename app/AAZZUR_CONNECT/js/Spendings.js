@@ -8,7 +8,8 @@ import {
     Animated,
     Easing,
     ActivityIndicator,
-    Dimensions
+    Dimensions,
+    Platform
 } from 'react-native';
 import AppBar from './AppBar';
 import { scaleHeight, scaleWidth, scaleFont } from './scale';
@@ -60,6 +61,7 @@ export default class Spendings extends Component {
             }
             this.setState({loading: false, noSuchAccount: false, userName: remote.getUserName()});
         }).catch(err => {
+            console.log('err');
             if(this.state.userName)
                 remote.setUserName(this.state.userName);
             this.setState({loading: false, noSuchAccount: true});
@@ -171,7 +173,7 @@ export default class Spendings extends Component {
                 <TouchableOpacity activeOpacity = {0.7} style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(82), borderLeftColor: '#2274A5FF', borderLeftWidth: 2, elevation: 2}} onPress = {() => this.showCategoryDetails(item)}>
                     <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginVertical: scaleHeight(12)}}>
                         <Image style = {{height: scaleHeight(24), width: scaleWidth(24), marginRight: scaleWidth(16)}} source = {graphLabelImages[item.category.split(' ').join('_')]}/>
-                            <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{item.category}</Text>
+                            <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{item.category}</Text>
                         <View style = {{position: 'absolute', right: 0, flexDirection: 'row'}}>
                             <Image style = {{marginRight: scaleWidth(12), height: scaleHeight(24), width: scaleWidth(24)}} resizeMode = 'contain' source = {require('../assets/reveal.png')}/>
                             <Image style = {{height: scaleWidth(24), width: scaleWidth(24), marginRight: scaleWidth(12)}} resizeMode = 'contain' source = {require('../assets/expand-down-24px.png')}/>
@@ -179,10 +181,10 @@ export default class Spendings extends Component {
                     </View>
                     <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginTop: scaleHeight(12)}}>
                 
-                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{'€ ' + item.amount}</Text>
-                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black', marginLeft: scaleWidth(75), textAlign: 'right'}}>{'€ ' + Math.abs(item.diff).toFixed(2)}</Text>
+                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{'€ ' + item.amount}</Text>
+                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', marginLeft: scaleWidth(75), textAlign: 'right'}}>{'€ ' + Math.abs(item.diff).toFixed(2)}</Text>
                         <Image style = {{height: scaleWidth(20), width: scaleWidth(20), marginLeft: scaleWidth(16), marginRight: scaleWidth(4)}} resizeMode = 'contain' source = {item.diff >0 ? require('../assets/arrow_upward_24px.png') :  require('../assets/arrow_downward_24px.png')} />
-                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black', textAlign: 'left'}} numberOfLines = {1}>{(Math.abs(item.diff) / item.amountPeer * 100).toFixed(2) + '%'}</Text>
+                        <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', textAlign: 'left'}} numberOfLines = {1}>{(Math.abs(item.diff) / item.amountPeer * 100).toFixed(2) + '%'}</Text>
                     </View>
                 </TouchableOpacity>
                 
@@ -216,11 +218,11 @@ export default class Spendings extends Component {
             <View style = {{backgroundColor: 'white', width: '100%', height: '100%'}}>
                 <AppBar text = 'Spendings' />
                 {(this.state.loading || this.state.noSuchAccount) ?
-                <View style = {{width: '100%', height: scaleHeight(528), marginTop: scaleHeight(56), justifyContent: 'center', alignItems: 'center'}}>
-                {this.state.noSuchAccount ? <Text style = {{fontSize: scaleFont(22), fontFamily: 'sans-serif-condensed', color: 'black', fontWeight: 'bold'}}>No Such Account</Text> 
+                <View style = {{width: '100%', height: scaleHeight(528), marginTop: (Platform.OS === 'ios' ? 22 : 0) + scaleHeight(56), justifyContent: 'center', alignItems: 'center'}}>
+                {this.state.noSuchAccount ? <Text style = {{fontSize: scaleFont(22), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', fontWeight: 'bold'}}>No Such Account</Text> 
                 : <ActivityIndicator size = 'large' color = {colors.blue}/>}
                     </View> :
-                <View style = {{width: '100%', height: scaleHeight(528),  marginTop: scaleHeight(56)}}>
+                <View style = {{width: '100%', height: scaleHeight(528),  marginTop: (Platform.OS === 'ios' ? 22 : 0) + scaleHeight(56)}}>
                 <View style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(192), borderBottomColor: '#0000000D', borderBottomWidth: 1}}>
                 {monthDataIndex != undefined && monthlyCategoriesData && 
                 <Carousel 
@@ -232,11 +234,13 @@ export default class Spendings extends Component {
                 renderItem = {({item}) => (<BarChartComponent monthlyBarData = {item.monthlyBarData} 
                     xLabelData = {item.xLabelData} 
                     selectedMonth = {item.selectedMonth}/>)}
-                    />
+                useScrollView={true}
+                scrollEnabled = {true}
+                />
                 }
                 </View>
                 <View style = {{backgroundColor: 'white', height: scaleHeight(312), width: '100%'}}>
-                    <Text style = {{fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', paddingLeft: scaleWidth(16), color: 'black', marginBottom: scaleHeight(8), height: scaleHeight(24), opacity: 0.45, marginTop: scaleHeight(16)}}>Categories</Text>
+                    <Text style = {{fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', paddingLeft: scaleWidth(16), color: 'black', marginBottom: scaleHeight(8), height: scaleHeight(24), opacity: 0.45, marginTop: scaleHeight(16)}}>Categories</Text>
                     <View style = {{width: '100%', flex: 1, borderTopColor: '#0000000D', borderTopWidth: 1}}>
                     {categoriesData && <FlatList style = {{width: '100%', flex: 1}}
                     showsVerticalScrollIndicator = {false}
@@ -262,7 +266,7 @@ const CategoryDetailsComponent = props => {
             {/* <TouchableOpacity style = {{height: '100%', width: '100%', borderLeftColor: '#2274A5FF', borderLeftWidth: 2, elevation: 2 }} onPress = {props.hideCategoryDetails}> */}
             <TouchableOpacity style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginTop: scaleHeight(12)}} onPress = {props.hideCategoryDetails}>
                 <Image style = {{height: scaleHeight(24), width: scaleWidth(24), marginRight: scaleWidth(16)}} source = {graphLabelImages[props.item.category.split(' ').join('_')]} />
-                    <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{props.item.category}</Text>
+                    <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{props.item.category}</Text>
                 <View style = {{position: 'absolute', right: 0, flexDirection: 'row'}}>
                     <Image style = {{marginRight: scaleWidth(12), height: scaleHeight(24), width: scaleWidth(24)}} resizeMode = 'contain' source = {require('../assets/reveal.png')}/>
                     <Image style = {{height: scaleWidth(24), width: scaleWidth(24), marginRight: scaleWidth(12), transform: [{rotate: '180deg'}]}} resizeMode = 'contain' source = {require('../assets/expand-down-24px.png')}/>
@@ -271,10 +275,10 @@ const CategoryDetailsComponent = props => {
             </TouchableOpacity>
             <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginTop: scaleHeight(12),}}>
                 
-                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{'€ ' + props.item.amount}</Text>
-                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black', marginLeft: scaleWidth(75), textAlign: 'right'}}>{'€ ' + Math.abs(props.item.diff).toFixed(2)}</Text>
+                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{'€ ' + props.item.amount}</Text>
+                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', marginLeft: scaleWidth(75), textAlign: 'right'}}>{'€ ' + Math.abs(props.item.diff).toFixed(2)}</Text>
                 <Image style = {{height: scaleWidth(20), width: scaleWidth(20), marginLeft: scaleWidth(16), marginRight: scaleWidth(4)}} resizeMode = 'contain' source = {props.item.diff >0 ? require('../assets/arrow_upward_24px.png') :  require('../assets/arrow_downward_24px.png')} />
-                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black', textAlign: 'left'}} numberOfLines = {1}>{(Math.abs(props.item.diff) / props.item.amountPeer * 100).toFixed(2) + '%'}</Text>
+                <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', textAlign: 'left'}} numberOfLines = {1}>{(Math.abs(props.item.diff) / props.item.amountPeer * 100).toFixed(2) + '%'}</Text>
             </View>
             <View style = {{height: 2, width: '90%', backgroundColor: '#0000000D', marginTop: scaleHeight(16), alignSelf: 'center'}} />
             <View style = { {flex: 1}}>

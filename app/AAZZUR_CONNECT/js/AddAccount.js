@@ -5,7 +5,8 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    Platform
 } from 'react-native';
 import colors from './colors';
 import AppBar from './AppBar';
@@ -53,12 +54,20 @@ export default class AddAccount extends Component {
     }
 
     render() {
+        let iosElevationStyle =  {
+            shadowColor: '#000000',
+            shadowOffset: {
+                width: 0,
+                height: 1
+            },
+            shadowRadius: 0,
+            shadowOpacity: 0.5};
         return (
             <View style = {{backgroundColor: 'white', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center'}}>
                 <AppBar text = 'Add Account' />
-                <Animated.Image source = {require('../assets/aazzur_connect_logo.png')} style = {{position: 'absolute', height: scaleHeight(192), width: scaleWidth(192), top: scaleHeight(56), alignSelf: 'center', opacity: this.state.showLogo, transform: [{scale: this.state.showLogo}]}}
+                <Animated.Image source = {require('../assets/aazzur_connect_logo.png')} style = {{position: 'absolute', height: scaleHeight(192), width: scaleWidth(192), top: (Platform.OS === 'ios' ? 22 : 0) + scaleHeight(56), alignSelf: 'center', opacity: this.state.showLogo, transform: [{scale: this.state.showLogo}]}}
                 resizeMode = 'contain' />
-                <Text style = {{fontSize: scaleFont(18), fontFamily: 'sans-serif-condensed', marginBottom: scaleHeight(16), color: 'black'}}>Enter Bank details</Text>
+                <Text style = {{fontSize: scaleFont(18), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', marginBottom: scaleHeight(16), color: 'black'}}>Enter Bank details</Text>
                 <TextInput placeholder = 'IBAN' style = {{width: '80%', height: scaleHeight(40), borderColor: 'black', borderWidth: 0.5}} editable = {false} />
                 {/* <TextInput placeholder = 'Username' 
                 style = {{width: '80%', height: scaleHeight(40), marginTop: scaleHeight(10), borderColor: 'black', borderWidth: 0.5}} 
@@ -68,7 +77,7 @@ export default class AddAccount extends Component {
                 onPress = {() => {
                     remote.setUserName(this.state.userName);
                     this.props.navigation.navigate('Spendings');
-                    }} style = {{position: 'absolute', bottom: scaleHeight(16), width: '80%', height: scaleHeight(30), marginTop: scaleHeight(10), backgroundColor: !this.state.userName ? '#D8D8D8FF' : colors.blue, elevation: 2, justifyContent: 'center'}}>
+                    }} style = {[{position: 'absolute', bottom: scaleHeight(16), width: '80%', height: scaleHeight(30), marginTop: scaleHeight(10), backgroundColor: !this.state.userName ? '#D8D8D8FF' : colors.blue, elevation: 2, justifyContent: 'center'}, Platform.OS === 'ios' ? iosElevationStyle : {}]}>
                     <Text style = {{width: '100%', height: '100%', fontSize: scaleFont(16), textAlign: 'center', textAlignVertical: 'center', color: !this.state.userName ? 'black' : 'white'}}>Proceed</Text>
                 </TouchableOpacity>
             </View>

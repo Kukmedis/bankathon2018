@@ -10,7 +10,8 @@ import React, {Component} from 'react';
 import {
   Image,
   Text,
-  StyleSheet
+  StyleSheet,
+  Platform
 } from 'react-native';
 import {createStackNavigator, createBottomTabNavigator} from 'react-navigation';
 import Login from './Login';
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
   tabBarActiveLabel: {
       height: scaleHeight(16),
       marginBottom: scaleHeight(8),
-      fontFamily: 'sans-serif-condensed',
+      fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica',
       fontSize: scaleFont(12),
       color: '#FFFFFFFF',
       opacity: 1,
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
       height: scaleHeight(16),
       marginBottom: scaleHeight(7),
       marginTop: scaleHeight(1),
-      fontFamily: 'sans-serif-condensed',
+      fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica',
       fontSize: scaleFont(10),      
       color: '#FFFFFFFF',
       opacity: 0.8,
