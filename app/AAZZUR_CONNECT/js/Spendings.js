@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import {
     View,
     FlatList,
@@ -31,32 +31,58 @@ export default class Spendings extends Component {
         this.showCategoryDetails = this.showCategoryDetails.bind(this);
         this.hideCategoryDetails = this.hideCategoryDetails.bind(this);
         this.changeMonth = this.changeMonth.bind(this);
+        this.fetchUserData = this.fetchUserData.bind(this);
+        this.onFocusScreen = this.onFocusScreen.bind(this);
     }
 
     componentDidMount() {
+        
+        this.fetchUserData();
+        this.props.navigation.addListener('willFocus', this.onFocusScreen);
+    }
+
+    onFocusScreen(payload) {
+        if(payload && payload.action && payload.action.routeName === "Spendings") {
+            if(this.state.userName != remote.getUserName())
+                this.fetchUserData();
+        }
+
+    }
+
+    fetchUserData() {
         this.setState({loading: true});
-        remote.get('fancy-categories?username=jk@aazzur.com').then(async resp => {
+        remote.getUserData().then(async resp => {
             if(resp) {
                 let data = await resp.json();
                 let allData = this.storeData(data);
-                this.setState(allData);
-                this.setState({loading: false});
+                console.log('user data', remote.getUserName(), data);
+                this.setState(allData);               
             }
-        })
+            this.setState({loading: false, noSuchAccount: false, userName: remote.getUserName()});
+        }).catch(err => {
+            if(this.state.userName)
+                remote.setUserName(this.state.userName);
+            this.setState({loading: false, noSuchAccount: true});
+        });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(nextProps && nextProps.navigation && nextProps.navigation.state && nextProps.navigation.state.params && nextProps.navigation.state.params.updateData) {
+
+        }
     }
 
     monthToAmountData() {
         let date = new Date();
+        date.setDate(1);
         date.setMonth(date.getMonth() - 11);
         let monthToAmountData = {};
         let months = this.months();
-        for(let i = 0; i < 12; i++) {
-            
+        for(let i = 0; i < 12; i++) {            
             if(!monthToAmountData[months[date.getMonth()]])
                 monthToAmountData[months[date.getMonth()]] = 0;
             date.setMonth(date.getMonth() + 1);
-        }
-           
+        }           
             
         return monthToAmountData;
     }
@@ -90,7 +116,7 @@ export default class Spendings extends Component {
                 monthlyBarData = [{
                     data: peerData.length > 5 ? peerData.slice(0, 5) : peerData,
                     svg: {
-                        fill: '#F2F2F2FF',                   
+                        fill: '#E0EAF1FF',                   
                     }
                 }, {
                     data: userData.length > 5 ? userData.slice(0, 5) : userData,
@@ -103,18 +129,17 @@ export default class Spendings extends Component {
         }
         return {monthlyCategoriesData: monthlyCategoriesData.sort((a, b) => new Date(b.selectedMonth) - new Date(a.selectedMonth)), monthlyData, selectedMonth};
     }
+
     showCategoryDetails(selectedCategory) {
         let monthToUserAmountData = this.monthToAmountData();
         let monthToPeerAmountData = this.monthToAmountData();
         let {monthlyData} = this.state;
-        console.log('momnthly', monthlyData, monthToPeerAmountData);
         let months = this.months();
         for(let date in monthlyData) {
             let categoriesData = monthlyData[date];
             for(let categoryData of categoriesData) {
                 if(categoryData.category === selectedCategory.category) {
                     let monthName = months[new Date(date).getMonth()];
-                    console.log('peer amount', categoryData.amountPeer);
                     monthToUserAmountData[monthName] += categoryData.amount;
                     monthToPeerAmountData[monthName] += categoryData.amountPeer;
                     break;
@@ -141,12 +166,11 @@ export default class Spendings extends Component {
     }
 
     renderItem({item}) {
-        console.log('categories', item);
         return (
             <View style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(84), paddingHorizontal: scaleWidth(8), marginBottom: scaleWidth(12),}}>
                 <TouchableOpacity activeOpacity = {0.7} style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(82), borderLeftColor: '#2274A5FF', borderLeftWidth: 2, elevation: 2}} onPress = {() => this.showCategoryDetails(item)}>
                     <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginVertical: scaleHeight(12)}}>
-                        <Image style = {{height: scaleHeight(24), width: scaleWidth(24)}} />
+                        <Image style = {{height: scaleHeight(24), width: scaleWidth(24), marginRight: scaleWidth(16)}} source = {graphLabelImages[item.category.split(' ').join('_')]}/>
                             <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{item.category}</Text>
                         <View style = {{position: 'absolute', right: 0, flexDirection: 'row'}}>
                             <Image style = {{marginRight: scaleWidth(12), height: scaleHeight(24), width: scaleWidth(24)}} resizeMode = 'contain' source = {require('../assets/reveal.png')}/>
@@ -191,9 +215,10 @@ export default class Spendings extends Component {
         return (
             <View style = {{backgroundColor: 'white', width: '100%', height: '100%'}}>
                 <AppBar text = 'Spendings' />
-                {this.state.loading ?
+                {(this.state.loading || this.state.noSuchAccount) ?
                 <View style = {{width: '100%', height: scaleHeight(528), marginTop: scaleHeight(56), justifyContent: 'center', alignItems: 'center'}}>
-                <ActivityIndicator size = 'large' color = {colors.blue}/>
+                {this.state.noSuchAccount ? <Text style = {{fontSize: scaleFont(22), fontFamily: 'sans-serif-condensed', color: 'black', fontWeight: 'bold'}}>No Such Account</Text> 
+                : <ActivityIndicator size = 'large' color = {colors.blue}/>}
                     </View> :
                 <View style = {{width: '100%', height: scaleHeight(528),  marginTop: scaleHeight(56)}}>
                 <View style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(192), borderBottomColor: '#0000000D', borderBottomWidth: 1}}>
@@ -230,12 +255,13 @@ export default class Spendings extends Component {
 }
 
 const CategoryDetailsComponent = props => {
+    console.log(props.monthToUserAmountData, Object.keys(props.monthToUserAmountData), Object.values(props.monthToUserAmountData));
     return (
         <View style = {{width: '100%', height: '100%', paddingHorizontal: scaleWidth(8), paddingBottom: scaleHeight(2)}}>
        
             {/* <TouchableOpacity style = {{height: '100%', width: '100%', borderLeftColor: '#2274A5FF', borderLeftWidth: 2, elevation: 2 }} onPress = {props.hideCategoryDetails}> */}
             <TouchableOpacity style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginTop: scaleHeight(12)}} onPress = {props.hideCategoryDetails}>
-                <Image style = {{height: scaleHeight(24), width: scaleWidth(24)}} />
+                <Image style = {{height: scaleHeight(24), width: scaleWidth(24), marginRight: scaleWidth(16)}} source = {graphLabelImages[props.item.category.split(' ').join('_')]} />
                     <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: 'sans-serif-condensed', color: 'black'}}>{props.item.category}</Text>
                 <View style = {{position: 'absolute', right: 0, flexDirection: 'row'}}>
                     <Image style = {{marginRight: scaleWidth(12), height: scaleHeight(24), width: scaleWidth(24)}} resizeMode = 'contain' source = {require('../assets/reveal.png')}/>
@@ -255,8 +281,9 @@ const CategoryDetailsComponent = props => {
             <AreaChart style = {{width: '100%', height: scaleHeight(92)}} 
                 data = {Object.values(props.monthToPeerAmountData)} 
                 svg = {{fill: '#E0EAF1FF'}}
-                contentInset={{ top: scaleHeight(10), bottom: scaleHeight(10) }} animate
-                curve={ shape.curveNatural } 
+                contentInset={{ top: scaleHeight(10), bottom: scaleHeight(10) }} 
+                animate
+                curve={ shape.curveBasis } 
                 />
             <XAxis
                 data={ Object.keys(props.monthToPeerAmountData)}
@@ -275,68 +302,67 @@ const CategoryDetailsComponent = props => {
                     svg={ {
                         stroke: 'rgb(134, 65, 244)',
                     } }
-                    curve = { shape.curveNatural } 
+                    curve = { shape.curveBasis } 
+                    contentInset={{ top: scaleHeight(10), bottom: scaleHeight(10) }} 
                 />
                 </View>
         </View> 
     );
 }
 
-const BarChartComponent = props => {
-    return (
-        <View style = {{width: '100%', height: '100%', paddingHorizontal: scaleWidth(8)}}>
-            <Text style = {{marginTop: scaleHeight(16), color: 'black', paddingLeft: scaleWidth(16)}}>{'Spendings - ' + props.selectedMonth}</Text>
-            <BarChart style = {{height: scaleHeight(130), marginTop: scaleHeight(-15)}}
-            data = {props.monthlyBarData}
-            spacingInner = {0.5}
-            yAccessor = {({ item }) => item.value}
-            contentInset={ { top: scaleHeight(30), bottom: scaleHeight(30) } }
-            numberOfTicks = {5}
-            >
-            <Grid />
+class BarChartComponent extends PureComponent {
+    render() {
+        return (
+            <View style = {{width: '100%', height: '100%', paddingHorizontal: scaleWidth(8)}}>
+                <Text style = {{marginTop: scaleHeight(16), color: 'black', paddingLeft: scaleWidth(16)}}>{'Spendings - ' + this.props.selectedMonth}</Text>
+                <BarChart style = {{height: scaleHeight(140), marginTop: scaleHeight(-15)}}
+                data = {this.props.monthlyBarData}
+                spacingInner = {0.5}
+                yAccessor = {({ item }) => item.value}
+                contentInset={ { top: scaleHeight(30), bottom: scaleHeight(30) } }
+                numberOfTicks = {5}
+                >
+                <Grid />
+                
+            </BarChart>
+            <XAxis                    
+                style={{ marginTop: -10,  }}
+                xAccessor = {({item}) => item}
+                data = {this.props.xLabelData}
+                scale={scale.scaleBand}
+                formatLabel={ (value, index) => ' ' }
+                labelStyle={ { color: 'black', width: scaleWidth(20)} }
+                spacingInner = {0.5}
+                contentInset={ { top: scaleHeight(30), bottom: scaleHeight(30) } }
             
-        </BarChart>
-        <XAxis                    
-            style={{ marginTop: 0,  }}
-            xAccessor = {({item}) => item}
-            data = {props.xLabelData}
-            scale={scale.scaleBand}
-            formatLabel={ (value, index) => ' ' }
-            labelStyle={ { color: 'black', width: scaleWidth(20)} }
-            spacingInner = {0.5}
-            contentInset={ { top: scaleHeight(30), bottom: scaleHeight(30) } }
-           
-        ><SVGImage  width="50%"
-        height="100%" x = {"" + scaleWidth(-50)} href={require('../assets/visibility_24px.png')}/>
-        <SVGImage  width="50%"
-        height="100%" x = {"" + scaleWidth(40)} href={require('../assets/visibility_24px.png')}/>
-         <SVGImage  width="50%"
-        height="100%" x = {"" + scaleWidth(135)} href={require('../assets/visibility_24px.png')}/>
-         <SVGImage  width="50%"
-        height="100%" x = {"" + scaleWidth(230)} href={require('../assets/visibility_24px.png')}/>
-        
-        </XAxis>
-        </View>
-    );
+            >
+            {this.props.xLabelData && this.props.xLabelData.map((xLabel, index) =>  (<SVGImage key = {xLabel} width="50%"
+                height="100%" x = {"" + scaleWidth(-60 + (75 * index))} href={graphLabelImages[xLabel.split(' ').join('_')]}/>))}
+            
+            </XAxis>
+            </View>
+        );
+    }
 }
 
 const graphLabelImages = {
     Cash: require('../assets/money.png'),
-    Education: require('../assets/money.png'),
-    Income: require('../assets/money.png'),
-    Leisure: require('../assets/money.png'),
-    Health: require('../assets/money.png'),
-    Pets: require('../assets/money.png'),
-    Investment: require('../assets/money.png'),
-    Living_Costs: require('../assets/money.png'),
-    Rent: require('../assets/money.png'),
-    Transport: require('../assets/money.png'),
-    Other: require('../assets/money.png'),
-    Insurance: require('../assets/money.png'),
-    Utilities: require('../assets/money.png'),
-    Groceries: require('../assets/money.png'),
-    Electricity: require('../assets/money.png'),
-    Telecommunications: require('../assets/money.png'),
-    Clothing: require('../assets/money.png'),
-    Flights: require('../assets/money.png'),
+    Education: require('../assets/school.png'),
+    Income: require('../assets/income.png'),
+    Leisure: require('../assets/leisure.png'),
+    Health: require('../assets/health.png'),
+    Pets: require('../assets/pets.png'),
+    Investment: require('../assets/investment.png'),
+    Living_Costs: require('../assets/living_cost.png'),
+    Rent: require('../assets/rent.png'),
+    Transport: require('../assets/transport.png'),
+    Other: require('../assets/other.png'),
+    Insurance: require('../assets/insurance.png'),
+    Utilities: require('../assets/utility.png'),
+    Groceries: require('../assets/grocery.png'),
+    Electricity: require('../assets/electricity.png'),
+    Telecommunications: require('../assets/telecom.png'),
+    Clothing: require('../assets/clothing.png'),
+    Flights: require('../assets/flights.png'),
+    Restaurants: require('../assets/restaurant.png'),
 };
