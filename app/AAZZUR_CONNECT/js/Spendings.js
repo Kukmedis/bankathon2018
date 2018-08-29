@@ -173,14 +173,13 @@ export default class Spendings extends Component {
                 <TouchableOpacity activeOpacity = {0.7} style = {{backgroundColor: 'white', width: '100%', height: scaleHeight(82), borderLeftColor: '#2274A5FF', borderLeftWidth: 2, elevation: 2}} onPress = {() => this.showCategoryDetails(item)}>
                     <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginVertical: scaleHeight(12)}}>
                         <Image style = {{height: scaleHeight(24), width: scaleWidth(24), marginRight: scaleWidth(16)}} source = {graphLabelImages[item.category.split(' ').join('_')]}/>
-                            <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{item.category}</Text>
+                            <Text style = {{width: scaleWidth(92), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}} numberOfLines = {1} >{item.category}</Text>
                         <View style = {{position: 'absolute', right: 0, flexDirection: 'row'}}>
                             <Image style = {{marginRight: scaleWidth(12), height: scaleHeight(24), width: scaleWidth(24)}} resizeMode = 'contain' source = {require('../assets/reveal.png')}/>
                             <Image style = {{height: scaleWidth(24), width: scaleWidth(24), marginRight: scaleWidth(12)}} resizeMode = 'contain' source = {require('../assets/expand-down-24px.png')}/>
                         </View>
                     </View>
-                    <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16), marginTop: scaleHeight(12)}}>
-                
+                    <View style = {{flexDirection: 'row', width: '100%', paddingHorizontal: scaleWidth(16)}}>                
                         <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black'}}>{'€ ' + item.amount}</Text>
                         <Text style = {{width: scaleWidth(76), fontSize: scaleFont(16), fontFamily: Platform.OS === 'android' ? 'sans-serif-condensed' : 'Helvetica', color: 'black', marginLeft: scaleWidth(75), textAlign: 'right'}}>{'€ ' + Math.abs(item.diff).toFixed(2)}</Text>
                         <Image style = {{height: scaleWidth(20), width: scaleWidth(20), marginLeft: scaleWidth(16), marginRight: scaleWidth(4)}} resizeMode = 'contain' source = {item.diff >0 ? require('../assets/arrow_upward_24px.png') :  require('../assets/arrow_downward_24px.png')} />
@@ -319,7 +318,7 @@ class BarChartComponent extends PureComponent {
         return (
             <View style = {{width: '100%', height: '100%', paddingHorizontal: scaleWidth(8)}}>
                 <Text style = {{marginTop: scaleHeight(16), color: 'black', paddingLeft: scaleWidth(16)}}>{'Spendings - ' + this.props.selectedMonth}</Text>
-                <BarChart style = {{height: scaleHeight(140), marginTop: scaleHeight(-15)}}
+                <BarChart style = {{height: scaleHeight(140), marginTop: scaleHeight(-15), paddingVertical: 0}}
                 data = {this.props.monthlyBarData}
                 spacingInner = {0.5}
                 yAccessor = {({ item }) => item.value}
@@ -330,14 +329,14 @@ class BarChartComponent extends PureComponent {
                 
             </BarChart>
             <XAxis                    
-                style={{ marginTop: -10,  }}
+                style={{ marginTop: 0,  }}
                 xAccessor = {({item}) => item}
                 data = {this.props.xLabelData}
                 scale={scale.scaleBand}
                 formatLabel={ (value, index) => ' ' }
                 labelStyle={ { color: 'black', width: scaleWidth(20)} }
                 spacingInner = {0.5}
-                contentInset={ { top: scaleHeight(30), bottom: scaleHeight(30) } }
+                contentInset={ { top: scaleHeight(20), bottom: scaleHeight(20) } }
             
             >
             {this.props.xLabelData && this.props.xLabelData.map((xLabel, index) =>  (<SVGImage key = {xLabel} width="50%"
