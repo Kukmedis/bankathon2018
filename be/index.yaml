@@ -1,0 +1,9 @@
+indexes:
+- kind: Category
+  properties:
+  - name: username
+  - name: month
+    direction: desc
+  - name: category_id
+  - name: subcategory_id
+  - name: id
